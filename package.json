@@ -1,0 +1,14 @@
+{
+  "name": "ml-dashboard-dev",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "backend": "node ./scripts/start-backend.js",
+    "frontend": "cd frontend && npm start",
+    "dev": "concurrently -k \"npm:backend\" \"npm:frontend\"",
+    "install-all": "npm install && (cd frontend && npm install)"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

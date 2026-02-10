@@ -1,0 +1,15 @@
+.metric-card {
+  min-width: 200px;
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+  }
+}

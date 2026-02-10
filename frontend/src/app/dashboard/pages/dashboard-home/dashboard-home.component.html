@@ -1,0 +1,89 @@
+<div class="dashboard-container">
+  <h1>ML Dashboard</h1>
+
+  <div class="metrics-grid">
+    @for (card of metricCards; track card.title) {
+      <app-metrics-card
+        [title]="card.title"
+        [value]="card.value"
+        [icon]="card.icon"
+        [color]="card.color"
+      ></app-metrics-card>
+    }
+  </div>
+
+  @if (inflowError) {
+    <div class="inflow-error">{{ inflowError }}</div>
+  }
+
+  <div class="tables-grid">
+    <div class="table-card">
+      <h2>Recent Sales Orders</h2>
+      @if (inflowLoading) {
+        <p class="loading-text">Loading...</p>
+      } @else if (recentSalesOrders.length === 0) {
+        <p class="empty-text">No recent sales orders</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of recentSalesOrders; track order.id) {
+              <tr>
+                <td>{{ order.orderNumber || '-' }}</td>
+                <td>{{ order.customer || '-' }}</td>
+                <td>{{ formatDate(order.orderDate) }}</td>
+                <td><span class="status-badge">{{ order.status || '-' }}</span></td>
+                <td>{{ formatCurrency(order.total) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="table-card">
+      <h2>Recent Purchase Orders</h2>
+      @if (inflowLoading) {
+        <p class="loading-text">Loading...</p>
+      } @else if (recentPurchaseOrders.length === 0) {
+        <p class="empty-text">No recent purchase orders</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Vendor</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of recentPurchaseOrders; track order.id) {
+              <tr>
+                <td>{{ order.orderNumber || '-' }}</td>
+                <td>{{ order.vendor || '-' }}</td>
+                <td>{{ formatDate(order.orderDate) }}</td>
+                <td><span class="status-badge">{{ order.status || '-' }}</span></td>
+                <td>{{ formatCurrency(order.total) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <app-chart-placeholder title="Training Loss"></app-chart-placeholder>
+    <app-chart-placeholder title="Accuracy Over Time"></app-chart-placeholder>
+  </div>
+</div>

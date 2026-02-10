@@ -1,0 +1,96 @@
+# Python
+.venv/
+venv/
+backend/venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.env
+.env.local
+.env.*.local
+*.log
+
+# ML Models (keep .gitkeep)
+backend/saved_models/*.keras
+backend/saved_models/*.h5
+backend/saved_models/*.pkl
+backend/saved_models/*.joblib
+!backend/saved_models/.gitkeep
+
+# Node / Angular
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+.npm
+*.tgz
+.eslintcache
+.node_repl_history
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Claude Code
+.claude/
+
+# Misc
+*.bak
+*.tmp
+*.temp
+*.pid
+*.seed
+*.gz
+*.zip
