@@ -27,26 +27,11 @@ export class OrderInformationComponent implements OnInit {
     this.error = null;
     this.salesOrders = [];
 
-    this.fetchAllOrders(0);
-  }
-
-  private fetchAllOrders(offset: number): void {
-    const pageSize = 100;
-
-    this.inflowService.listSalesOrdersWithDetails(pageSize, offset).subscribe({
+    this.inflowService.listSalesOrdersWithDetails().subscribe({
       next: (response) => {
-        const newOrders = response.data || [];
-        this.salesOrders = [...this.salesOrders, ...newOrders];
-
-        // If there are more orders, fetch the next page
-        if (response.hasMore && newOrders.length === pageSize) {
-          this.fetchAllOrders(offset + pageSize);
-        } else {
-          // All orders loaded, sort them
-          this.salesOrders = this.sortOrdersByNumber(this.salesOrders);
-          this.loading = false;
-          console.log(`Loaded ${this.salesOrders.length} total orders`);
-        }
+        this.salesOrders = this.sortOrdersByDate(response.data || []);
+        this.loading = false;
+        console.log(`Loaded ${this.salesOrders.length} total orders`);
       },
       error: (err) => {
         console.error('Error loading sales orders:', err);
@@ -56,11 +41,11 @@ export class OrderInformationComponent implements OnInit {
     });
   }
 
-  sortOrdersByNumber(orders: InflowSalesOrder[]): InflowSalesOrder[] {
+  sortOrdersByDate(orders: InflowSalesOrder[]): InflowSalesOrder[] {
     return [...orders].sort((a, b) => {
-      const orderA = a.orderNumber || '';
-      const orderB = b.orderNumber || '';
-      return orderA.localeCompare(orderB, undefined, { numeric: true });
+      const dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+      const dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+      return dateB - dateA;
     });
   }
 

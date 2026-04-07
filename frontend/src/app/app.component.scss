@@ -18,9 +18,12 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 8px;
+    gap: 4px;
+    height: 100%;
+    align-items: center;
 
-    li a {
+    // Direct links (single-item groups like Dashboard, Products)
+    > li > a {
       display: block;
       padding: 8px 16px;
       color: rgba(255, 255, 255, 0.85);
@@ -38,6 +41,82 @@
       &.active {
         background: rgba(255, 255, 255, 0.2);
         color: #fff;
+      }
+    }
+
+    // Dropdown groups
+    .nav-group {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
+      .group-label {
+        display: block;
+        padding: 8px 16px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.15s ease, color 0.15s ease;
+        user-select: none;
+
+        &::after {
+          content: '';
+          display: inline-block;
+          width: 0;
+          height: 0;
+          margin-left: 6px;
+          vertical-align: middle;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 4px solid rgba(255, 255, 255, 0.6);
+        }
+      }
+
+      &:hover .group-label {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+
+      .nav-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 220px;
+        background: #fff;
+        border-radius: 4px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        list-style: none;
+        margin: 0;
+        padding: 4px 0;
+        z-index: 1000;
+
+        li a {
+          display: block;
+          padding: 10px 16px;
+          color: #333;
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 400;
+          transition: background 0.1s ease;
+
+          &:hover {
+            background: #f0f0f0;
+          }
+
+          &.active {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-weight: 500;
+          }
+        }
+      }
+
+      &:hover .nav-dropdown {
+        display: block;
       }
     }
   }

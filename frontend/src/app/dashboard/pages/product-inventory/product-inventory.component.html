@@ -1,0 +1,146 @@
+<div class="product-inventory-container">
+  <div class="page-header">
+    <h1>Product Inventory</h1>
+    <div class="header-actions">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search by name, SKU, category..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilter()"
+      />
+      <button class="refresh-btn" (click)="loadProducts()" [disabled]="loading">
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Loading products...</p>
+    </div>
+  } @else if (filteredProducts.length === 0) {
+    <div class="empty-state">
+      @if (searchTerm) {
+        <p>No products match "{{ searchTerm }}".</p>
+      } @else {
+        <p>No products found.</p>
+      }
+    </div>
+  } @else {
+    <div class="summary-bar">
+      <span>{{ filteredProducts.length }} product{{ filteredProducts.length === 1 ? '' : 's' }}</span>
+    </div>
+
+    <div class="table-container">
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th class="col-expand"></th>
+            <th class="col-name sortable" (click)="toggleSort('name')">
+              Product{{ getSortIcon('name') }}
+            </th>
+            <th class="col-sku sortable" (click)="toggleSort('sku')">
+              SKU{{ getSortIcon('sku') }}
+            </th>
+            <th class="col-category sortable" (click)="toggleSort('category')">
+              Category{{ getSortIcon('category') }}
+            </th>
+            <th class="col-number sortable" (click)="toggleSort('quantityOnHand')">
+              Qty on Hand{{ getSortIcon('quantityOnHand') }}
+            </th>
+            <th class="col-number sortable" (click)="toggleSort('reorderPoint')">
+              Reorder Point{{ getSortIcon('reorderPoint') }}
+            </th>
+            <th class="col-status">Status</th>
+            <th class="col-currency sortable" (click)="toggleSort('cost')">
+              Cost{{ getSortIcon('cost') }}
+            </th>
+            <th class="col-currency sortable" (click)="toggleSort('price')">
+              Price{{ getSortIcon('price') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of filteredProducts; track product.name) {
+            <tr
+              class="product-row"
+              [class.expandable]="hasVariants(product)"
+              [class.expanded]="isExpanded(product)"
+              (click)="hasVariants(product) && toggleExpand(product)"
+            >
+              <td class="col-expand">
+                @if (hasVariants(product)) {
+                  <span class="expand-icon">{{ isExpanded(product) ? '-' : '+' }}</span>
+                }
+              </td>
+              <td class="col-name">
+                {{ product.name || '-' }}
+                @if (hasVariants(product)) {
+                  <span class="variant-count">({{ product.variants!.length }} variants)</span>
+                }
+              </td>
+              <td class="col-sku">{{ hasVariants(product) ? '-' : (product.sku || '-') }}</td>
+              <td class="col-category">{{ getCategoryName(product) }}</td>
+              <td class="col-number">{{ product.quantityOnHand ?? '-' }}</td>
+              <td class="col-number">{{ product.reorderPoint ?? '-' }}</td>
+              <td class="col-status">
+                <span class="stock-badge" [class]="getStockClass(product)">
+                  {{ getStockLabel(product) }}
+                </span>
+              </td>
+              <td class="col-currency">{{ hasVariants(product) ? '-' : formatCurrency(product.cost) }}</td>
+              <td class="col-currency">{{ hasVariants(product) ? '-' : formatCurrency(product.defaultPrice?.fixedMarkup) }}</td>
+            </tr>
+            @if (isExpanded(product) && product.variants) {
+              <tr class="variants-row">
+                <td colspan="9">
+                  <div class="variants-container">
+                    <table class="variants-table">
+                      <thead>
+                        <tr>
+                          <th>Variant</th>
+                          <th>Product ID</th>
+                          <th>SKU</th>
+                          <th>Barcode</th>
+                          <th class="text-right">Qty on Hand</th>
+                          <th class="text-right">Reorder Point</th>
+                          <th>Status</th>
+                          <th class="text-right">Cost</th>
+                          <th class="text-right">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (v of product.variants; track v.id) {
+                          <tr>
+                            <td>{{ v.variantLabel || v.name || '-' }}</td>
+                            <td class="id-cell">{{ v.id ?? '-' }}</td>
+                            <td class="sku-cell">{{ v.sku || '-' }}</td>
+                            <td>{{ v.barcode || '-' }}</td>
+                            <td class="text-right">{{ v.quantityOnHand ?? '-' }}</td>
+                            <td class="text-right">{{ v.reorderPoint ?? '-' }}</td>
+                            <td>
+                              <span class="stock-badge" [class]="getStockClass(v)">
+                                {{ getStockLabel(v) }}
+                              </span>
+                            </td>
+                            <td class="text-right">{{ formatCurrency(v.cost) }}</td>
+                            <td class="text-right">{{ formatCurrency(v.defaultPrice?.fixedMarkup) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,74 @@
+<div class="matrix-container">
+  <div class="page-header">
+    <h1>Product Order Matrix</h1>
+    <button class="refresh-btn" (click)="loadMatrix()" [disabled]="loading">
+      Refresh
+    </button>
+  </div>
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Loading product order matrix...</p>
+    </div>
+  } @else if (rows.length === 0) {
+    <div class="empty-state">
+      <p>No product order matrix data available.</p>
+    </div>
+  } @else {
+    <div class="summary-bar">
+      <span>{{ rows.length }} orders</span>
+      <span class="sep">|</span>
+      <span>{{ locColumns.length }} locations</span>
+      <span class="sep">|</span>
+      <span>{{ nextProdColumns.length }} products</span>
+    </div>
+
+    <div class="table-scroll">
+      <table class="matrix-table">
+        <thead>
+          <!-- Group header row -->
+          <tr class="group-header">
+            <th [attr.colspan]="3" class="group-label">Order</th>
+            <th [attr.colspan]="locColumns.length" class="group-label group-loc">Locations</th>
+            <th [attr.colspan]="nextProdColumns.length" class="group-label group-next-prod">Next Order Products</th>
+          </tr>
+          <!-- Column header row -->
+          <tr>
+            @for (col of fixedColumns; track col) {
+              <th class="fixed-col">{{ fixedHeaders[col] }}</th>
+            }
+            @for (col of locColumns; track col) {
+              <th class="loc-col">{{ formatLocHeader(col) }}</th>
+            }
+            @for (col of nextProdColumns; track col) {
+              <th class="next-prod-col">{{ formatNextProdHeader(col) }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.orderNumber) {
+            <tr>
+              @for (col of fixedColumns; track col) {
+                <td class="fixed-col">{{ getCellValue(row, col) }}</td>
+              }
+              @for (col of locColumns; track col) {
+                <td class="loc-cell" [class.active]="row[col] === 1">
+                  {{ getCellValue(row, col) }}
+                </td>
+              }
+              @for (col of nextProdColumns; track col) {
+                <td class="next-prod-cell" [class.has-qty]="row[col] && row[col] !== 0">
+                  {{ getCellValue(row, col) }}
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

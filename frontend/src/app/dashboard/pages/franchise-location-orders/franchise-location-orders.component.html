@@ -1,0 +1,85 @@
+<div class="franchise-location-orders-container">
+  <div class="page-header">
+    <h1>Franchise Orders by Location</h1>
+  </div>
+
+  @if (citiesError) {
+    <div class="error-message">{{ citiesError }}</div>
+  }
+
+  @if (loadingCities) {
+    <div class="loading-container">
+      <p>Loading available locations...</p>
+    </div>
+  } @else if (!citiesError && cities.length === 0) {
+    <div class="empty-state">
+      <p>No franchise locations found.</p>
+    </div>
+  } @else if (cities.length > 0) {
+    <div class="layout">
+      <aside class="city-sidebar">
+        <h3 class="sidebar-title">Locations</h3>
+        <ul class="city-list">
+          @for (city of cities; track city.citySlug) {
+            <li
+              class="city-item"
+              [class.active]="selectedCitySlug === city.citySlug"
+              (click)="onCitySelect(city.citySlug)"
+            >
+              {{ city.displayName }}
+            </li>
+          }
+        </ul>
+      </aside>
+
+      <section class="orders-panel">
+        @if (selectedCitySlug) {
+          <div class="panel-header">
+            <h2>{{ getSelectedCityName() }}</h2>
+          </div>
+
+          @if (ordersError) {
+            <div class="error-message">{{ ordersError }}</div>
+          }
+
+          @if (loadingOrders) {
+            <div class="loading-container">
+              <p>Loading orders...</p>
+            </div>
+          } @else if (orders.length === 0) {
+            <div class="empty-state">
+              <p>No orders found for this location.</p>
+            </div>
+          } @else {
+            <div class="table-container">
+              <table class="orders-table">
+                <thead>
+                  <tr>
+                    <th class="col-order">Order #</th>
+                    <th class="col-contact">Contact</th>
+                    <th class="col-date">Order Date</th>
+                    <th class="col-date">Next Order Date</th>
+                    <th class="col-qty">Qty</th>
+                    <th class="col-total">Order Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of orders; track $index) {
+                    <tr>
+                      <td class="col-order">{{ row.orderNumber || '-' }}</td>
+                      <td class="col-contact">{{ row.contactName || '-' }}</td>
+                      <td class="col-date">{{ formatDate(row.orderDate) }}</td>
+                      <td class="col-date">{{ formatDate(row.nextOrderDate) }}</td>
+                      <td class="col-qty text-right">{{ row.totalQty ?? '-' }}</td>
+                      <td class="col-total text-right">{{ formatCurrency(row.orderTotal) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        }
+      </section>
+    </div>
+  }
+</div>

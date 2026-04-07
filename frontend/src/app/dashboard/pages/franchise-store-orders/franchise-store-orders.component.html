@@ -1,0 +1,98 @@
+<div class="franchise-store-orders-container">
+  <div class="page-header">
+    <h1>Franchise Store Orders</h1>
+    <button class="refresh-btn" (click)="loadOrders()" [disabled]="loading">
+      Refresh
+    </button>
+  </div>
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Loading franchise store orders...</p>
+    </div>
+  } @else if (salesOrders.length === 0) {
+    <div class="empty-state">
+      <p>No franchise store orders found.</p>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th class="col-expand"></th>
+            <th class="col-order">Order #</th>
+            <th class="col-contact">Contact Name</th>
+            <th class="col-location">Location</th>
+            <th class="col-date">Order Date</th>
+            <th class="col-date">Completed Date</th>
+            <th class="col-status">Status</th>
+            <th class="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of salesOrders; track getOrderId(order)) {
+            <tr
+              class="order-row"
+              [class.expanded]="isExpanded(order)"
+              (click)="toggleOrderExpand(order)"
+            >
+              <td class="col-expand">
+                <span class="expand-icon">{{ isExpanded(order) ? '-' : '+' }}</span>
+              </td>
+              <td class="col-order">{{ order.orderNumber || '-' }}</td>
+              <td class="col-contact">{{ getContactName(order) }}</td>
+              <td class="col-location">{{ getLocation(order) }}</td>
+              <td class="col-date">{{ formatDate(order.orderDate) }}</td>
+              <td class="col-date">{{ getCompletedDate(order) }}</td>
+              <td class="col-status">
+                <span class="status-badge" [class]="getStatusClass(order.inventoryStatus)">
+                  {{ order.inventoryStatus || '-' }}
+                </span>
+              </td>
+              <td class="col-total">{{ formatCurrency(order.total) }}</td>
+            </tr>
+            @if (isExpanded(order)) {
+              <tr class="items-row">
+                <td colspan="8">
+                  <div class="items-container">
+                    <h4>Ordered Products</h4>
+                    @if (getOrderItems(order).length === 0) {
+                      <p class="no-items">No line item details available for this order.</p>
+                    } @else {
+                      <table class="items-table">
+                        <thead>
+                          <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Line Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (item of getOrderItems(order); track item.productId) {
+                            <tr>
+                              <td>{{ item.productName || '-' }}</td>
+                              <td>{{ item.sku || '-' }}</td>
+                              <td class="text-right">{{ item.quantity ?? '-' }}</td>
+                              <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+                              <td class="text-right">{{ formatCurrency(item.total) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

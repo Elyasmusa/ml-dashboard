@@ -1,12 +1,28 @@
 <nav class="main-nav">
   <div class="nav-brand">ML Dashboard</div>
   <ul class="nav-links">
-    <li>
-      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    </li>
-    <li>
-      <a routerLink="/orders" routerLinkActive="active">Order Information</a>
-    </li>
+    @for (group of navGroups; track group.label) {
+      @if (group.links.length === 1) {
+        <li>
+          <a [routerLink]="group.links[0].path" routerLinkActive="active">
+            {{ group.label }}
+          </a>
+        </li>
+      } @else {
+        <li class="nav-group">
+          <span class="group-label">{{ group.label }}</span>
+          <ul class="nav-dropdown">
+            @for (link of group.links; track link.path) {
+              <li>
+                <a [routerLink]="link.path" routerLinkActive="active">
+                  {{ link.label }}
+                </a>
+              </li>
+            }
+          </ul>
+        </li>
+      }
+    }
   </ul>
 </nav>
 <main class="main-content">

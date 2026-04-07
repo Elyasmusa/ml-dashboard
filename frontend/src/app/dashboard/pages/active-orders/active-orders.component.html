@@ -1,0 +1,109 @@
+<div class="active-orders-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Active Orders</h1>
+      @if (!loading && orders.length > 0) {
+        <span class="order-count">{{ orders.length }} order{{ orders.length === 1 ? '' : 's' }}</span>
+      }
+    </div>
+    <button class="refresh-btn" (click)="loadOrders()" [disabled]="loading">
+      Refresh
+    </button>
+  </div>
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Loading active orders...</p>
+    </div>
+  } @else if (orders.length === 0) {
+    <div class="empty-state">
+      <p>No active orders found.</p>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th class="col-expand"></th>
+            <th class="col-order">Order #</th>
+            <th class="col-contact">Customer</th>
+            <th class="col-location">Location</th>
+            <th class="col-date">Order Date</th>
+            <th class="col-date">Required Date</th>
+            <th class="col-status">Status</th>
+            <th class="col-status">Inv. Status</th>
+            <th class="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of orders; track getOrderId(order)) {
+            <tr
+              class="order-row"
+              [class.expanded]="isExpanded(order)"
+              (click)="toggleExpand(order)"
+            >
+              <td class="col-expand">
+                <span class="expand-icon">{{ isExpanded(order) ? '−' : '+' }}</span>
+              </td>
+              <td class="col-order">{{ order.orderNumber || '-' }}</td>
+              <td class="col-contact">{{ getContactName(order) }}</td>
+              <td class="col-location">{{ getLocation(order) }}</td>
+              <td class="col-date">{{ formatDate(order.orderDate) }}</td>
+              <td class="col-date">{{ formatDate(order.requiredDate) }}</td>
+              <td class="col-status">
+                <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                  {{ order.status || '-' }}
+                </span>
+              </td>
+              <td class="col-status">
+                <span class="status-badge" [ngClass]="getStatusClass(order.inventoryStatus)">
+                  {{ order.inventoryStatus || '-' }}
+                </span>
+              </td>
+              <td class="col-total">{{ formatCurrency(order.total) }}</td>
+            </tr>
+            @if (isExpanded(order)) {
+              <tr class="items-row">
+                <td colspan="9">
+                  <div class="items-container">
+                    <h4>Line Items</h4>
+                    @if (getOrderItems(order).length === 0) {
+                      <p class="no-items">No line item details available.</p>
+                    } @else {
+                      <table class="items-table">
+                        <thead>
+                          <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th class="text-right">Qty</th>
+                            <th class="text-right">Unit Price</th>
+                            <th class="text-right">Line Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (item of getOrderItems(order); track item.productId) {
+                            <tr>
+                              <td>{{ item.productName || '-' }}</td>
+                              <td>{{ item.sku || '-' }}</td>
+                              <td class="text-right">{{ item.quantity ?? '-' }}</td>
+                              <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+                              <td class="text-right">{{ formatCurrency(item.total) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

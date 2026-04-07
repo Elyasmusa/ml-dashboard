@@ -1,0 +1,32 @@
+<div class="roast-inventory-container">
+  <div class="page-header">
+    <h1>Roast Inventory</h1>
+  </div>
+
+  @if (loading) {
+    <p class="loading-text">Loading...</p>
+  } @else if (error) {
+    <p class="error-text">{{ error }}</p>
+  } @else {
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (roast of roasts; track roast.sku) {
+            <tr>
+              <td>{{ roast.name }}</td>
+              <td class="sku">{{ roast.sku }}</td>
+              <td class="stock">{{ roast.stock }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

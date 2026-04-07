@@ -1,89 +1,316 @@
 <div class="dashboard-container">
-  <h1>ML Dashboard</h1>
-
-  <div class="metrics-grid">
-    @for (card of metricCards; track card.title) {
-      <app-metrics-card
-        [title]="card.title"
-        [value]="card.value"
-        [icon]="card.icon"
-        [color]="card.color"
-      ></app-metrics-card>
-    }
+  <div class="page-header">
+    <h1>ML Dashboard</h1>
+    <div class="header-controls">
+      <button class="update-btn" (click)="triggerUpdate()" [disabled]="updating">
+        {{ updating ? 'Updating...' : 'Update Data' }}
+      </button>
+      <div class="view-toggle">
+        <button [class.active]="activeView === 'day'" (click)="selectView('day')">Day</button>
+        <button [class.active]="activeView === 'week'" (click)="selectView('week')">Week</button>
+        <button [class.active]="activeView === 'month'" (click)="selectView('month')">Month</button>
+      </div>
+    </div>
   </div>
 
-  @if (inflowError) {
-    <div class="inflow-error">{{ inflowError }}</div>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Predicted Orders</div>
+      <div class="metric-value">{{ loading ? '...' : predictedOrderCount }}</div>
+      <div class="metric-note">{{ viewLabel }}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Active Orders</div>
+      <div class="metric-value">{{ loadingActiveOrders ? '...' : activeOrdersToday.length }}</div>
+      <div class="metric-note">this week</div>
+    </div>
+  </div>
+
+  <div class="products-card table-card">
+    <div class="products-header">
+      <h2>Product Stock</h2>
+      <div class="stock-legend">
+        <span class="legend-item"><span class="legend-swatch swatch-green"></span>On Hand</span>
+        <span class="legend-item"><span class="legend-swatch swatch-blue"></span>After Predicted Orders</span>
+        <span class="legend-item"><span class="legend-swatch swatch-red"></span>Below Threshold</span>
+      </div>
+    </div>
+    <table class="data-table products-table">
+      <thead>
+        <tr>
+          <th>Roasts</th>
+          <th>Whole Bean</th>
+          <th>Spices</th>
+          <th>Blends &amp; Mixes</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (i of productRowIndices; track i) {
+          <tr>
+            <td>
+              @if (productColumns.roasts[i]) {
+                <span class="product-name" [class.negative]="isLow(productColumns.roasts[i])">{{ productColumns.roasts[i] }}</span>
+                <span class="product-stock" title="On hand">{{ getStock(productColumns.roasts[i]) }}</span>
+                <span class="product-qty" [class.negative]="isLow(productColumns.roasts[i])" title="After predicted orders">{{ getRemaining(productColumns.roasts[i]) }}</span>
+              }
+            </td>
+            <td>
+              @if (productColumns.whole[i]) {
+                <span class="product-name" [class.negative]="isLow(productColumns.whole[i])">{{ productColumns.whole[i] }}</span>
+                <span class="product-stock" title="On hand">{{ getStock(productColumns.whole[i]) }}</span>
+                <span class="product-qty" [class.negative]="isLow(productColumns.whole[i])" title="After predicted orders">{{ getRemaining(productColumns.whole[i]) }}</span>
+              }
+            </td>
+            <td>
+              @if (productColumns.spices[i]) {
+                <span class="product-name" [class.negative]="isLow(productColumns.spices[i])">{{ productColumns.spices[i] }}</span>
+                <span class="product-stock" title="On hand">{{ getStock(productColumns.spices[i]) }}</span>
+                <span class="product-qty" [class.negative]="isLow(productColumns.spices[i])" title="After predicted orders">{{ getRemaining(productColumns.spices[i]) }}</span>
+              }
+            </td>
+            <td>
+              @if (productColumns.mixes[i]) {
+                <span class="product-name" [class.negative]="isLow(productColumns.mixes[i])">{{ productColumns.mixes[i] }}</span>
+                <span class="product-stock" title="On hand">{{ getStock(productColumns.mixes[i]) }}</span>
+                <span class="product-qty" [class.negative]="isLow(productColumns.mixes[i])" title="After predicted orders">{{ getRemaining(productColumns.mixes[i]) }}</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (manufacturingRecommendations.length > 0) {
+    <div class="manufacturing-card table-card">
+      <div class="manufacturing-header">
+        <h2>Recommended Manufacturing</h2>
+        <div class="capacity-summary" [class.over-capacity]="totalMfgMinutes > viewCapacityMinutes">
+          <span class="capacity-time">{{ formatMfgTime(totalMfgMinutes) }}</span>
+          <span class="capacity-sep">/</span>
+          <span class="capacity-limit">{{ formatMfgTime(viewCapacityMinutes) }}</span>
+          <span class="capacity-label">capacity</span>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>On Hand</th>
+            <th>Demand</th>
+            <th>To Manufacture</th>
+            <th>After Mfg</th>
+            <th>Mfg Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of manufacturingRecommendations; track item.name) {
+            <tr class="manufacturing-row">
+              <td>{{ item.name }}</td>
+              <td>{{ item.stock }}</td>
+              <td class="demand-qty">{{ item.totalDemand }}</td>
+              <td class="manufacture-qty">{{ item.toManufacture }}</td>
+              <td class="after-mfg-qty" [class.still-low]="item.stock + item.toManufacture < item.totalDemand">{{ item.stock + item.toManufacture }}</td>
+              <td class="mfg-time">{{ formatMfgTime(item.timeMinutes) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (manufacturingRecommendations.length > 1) {
+        <div class="buffer-note">Includes {{ manufacturingRecommendations.length - 1 }} × 10m buffer between items</div>
+      }
+    </div>
   }
 
-  <div class="tables-grid">
-    <div class="table-card">
-      <h2>Recent Sales Orders</h2>
-      @if (inflowLoading) {
-        <p class="loading-text">Loading...</p>
-      } @else if (recentSalesOrders.length === 0) {
-        <p class="empty-text">No recent sales orders</p>
-      } @else {
+  <div class="predictions-section">
+    <h2>Predicted Orders — {{ viewLabel }}</h2>
+
+    @if (loading) {
+      <p class="loading-text">Loading predictions...</p>
+    } @else if (filteredPredictions.length === 0) {
+      <p class="empty-text">No predicted orders for {{ viewLabel | lowercase }}.</p>
+    } @else {
+      <div class="table-card">
         <table class="data-table">
           <thead>
             <tr>
               <th>Order #</th>
               <th>Customer</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Total</th>
+              <th>Contact</th>
+              <th>Predicted Date</th>
+              <th>Predicted Products</th>
             </tr>
           </thead>
           <tbody>
-            @for (order of recentSalesOrders; track order.id) {
+            @for (row of filteredPredictions; track row.orderNumber) {
               <tr>
-                <td>{{ order.orderNumber || '-' }}</td>
-                <td>{{ order.customer || '-' }}</td>
-                <td>{{ formatDate(order.orderDate) }}</td>
-                <td><span class="status-badge">{{ order.status || '-' }}</span></td>
-                <td>{{ formatCurrency(order.total) }}</td>
+                <td>{{ row.orderNumber || '-' }}</td>
+                <td>
+                  <div class="customer-cell">
+                    <span class="customer-name">{{ row.customerName || '-' }}</span>
+                    <span class="customer-location">{{ formatCity(row.city) }}</span>
+                  </div>
+                </td>
+                <td>{{ row.contactName || '-' }}</td>
+                <td>{{ formatDate(row.predictedNextOrderDate) }}</td>
+                <td>
+                  <div class="product-qty-list">
+                    @for (entry of getProductEntries(row); track entry.name) {
+                      <span class="product-qty-badge">
+                        {{ entry.name }}: {{ entry.qty }}
+                      </span>
+                    } @empty {
+                      <span class="empty-text">-</span>
+                    }
+                  </div>
+                </td>
               </tr>
             }
           </tbody>
         </table>
-      }
-    </div>
+      </div>
+    }
 
-    <div class="table-card">
-      <h2>Recent Purchase Orders</h2>
-      @if (inflowLoading) {
-        <p class="loading-text">Loading...</p>
-      } @else if (recentPurchaseOrders.length === 0) {
-        <p class="empty-text">No recent purchase orders</p>
-      } @else {
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Order #</th>
-              <th>Vendor</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (order of recentPurchaseOrders; track order.id) {
+    @if (!loading && activeView === 'day' && overduePredictions.length > 0) {
+      <div class="overdue-heading-row">
+        <h2 class="overdue-heading">
+          Overdue Orders
+          <span class="overdue-count">{{ overduePredictions.length }}</span>
+        </h2>
+        <button class="toggle-overdue-btn" (click)="showOverdueTable = !showOverdueTable">
+          {{ showOverdueTable ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      @if (showOverdueTable) {
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
               <tr>
-                <td>{{ order.orderNumber || '-' }}</td>
-                <td>{{ order.vendor || '-' }}</td>
-                <td>{{ formatDate(order.orderDate) }}</td>
-                <td><span class="status-badge">{{ order.status || '-' }}</span></td>
-                <td>{{ formatCurrency(order.total) }}</td>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Contact</th>
+                <th>Predicted Date</th>
+                <th>Predicted Products</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (row of overduePredictions; track row.orderNumber) {
+                <tr class="overdue-row">
+                  <td>{{ row.orderNumber || '-' }}</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-name">{{ row.customerName || '-' }}</span>
+                      <span class="customer-location">{{ formatCity(row.city) }}</span>
+                    </div>
+                  </td>
+                  <td>{{ row.contactName || '-' }}</td>
+                  <td>{{ formatDate(row.predictedNextOrderDate) }}</td>
+                  <td>
+                    <div class="product-qty-list">
+                      @for (entry of getProductEntries(row); track entry.name) {
+                        <span class="product-qty-badge">
+                          {{ entry.name }}: {{ entry.qty }}
+                        </span>
+                      } @empty {
+                        <span class="empty-text">-</span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
-    </div>
+    }
   </div>
 
-  <div class="charts-grid">
-    <app-chart-placeholder title="Training Loss"></app-chart-placeholder>
-    <app-chart-placeholder title="Accuracy Over Time"></app-chart-placeholder>
+  <div class="active-orders-section">
+    <div class="active-orders-header">
+      <h2>Active Orders — This Week</h2>
+      @if (activeOrdersToday.length > 0) {
+        <span class="active-count">{{ activeOrdersToday.length }}</span>
+      }
+    </div>
+
+    @if (activeOrdersToday.length > 0) {
+      <div class="table-card">
+        <table class="data-table active-orders-table">
+          <thead>
+            <tr>
+              <th class="col-expand"></th>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Location</th>
+              <th>Order Date</th>
+              <th>Required Date</th>
+              <th>Status</th>
+              <th>Inventory Status</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of activeOrdersToday; track getActiveOrderId(order)) {
+              <tr
+                class="order-row"
+                [class.expanded]="isActiveOrderExpanded(order)"
+                (click)="toggleActiveOrderExpand(order)"
+              >
+                <td class="col-expand">
+                  <span class="expand-icon">{{ isActiveOrderExpanded(order) ? '−' : '+' }}</span>
+                </td>
+                <td>{{ order.orderNumber || '-' }}</td>
+                <td>{{ order.contactName || order.customer || '-' }}</td>
+                <td>{{ order.location || '-' }}</td>
+                <td>{{ formatDate(order.orderDate) }}</td>
+                <td>{{ formatDate(order.requiredDate) }}</td>
+                <td><span class="status-badge">{{ formatOrderStatus(order.status) }}</span></td>
+                <td><span class="inv-status-badge">{{ order.inventoryStatus || '-' }}</span></td>
+                <td>{{ formatCurrency(order.total) }}</td>
+              </tr>
+              @if (isActiveOrderExpanded(order)) {
+                <tr class="items-row">
+                  <td colspan="9">
+                    <div class="items-container">
+                      <h4>Line Items</h4>
+                      @if (getActiveOrderItems(order).length === 0) {
+                        <p class="no-items">No line item details available.</p>
+                      } @else {
+                        <table class="items-table">
+                          <thead>
+                            <tr>
+                              <th>Product</th>
+                              <th>SKU</th>
+                              <th class="text-right">Qty</th>
+                              <th class="text-right">Unit Price</th>
+                              <th class="text-right">Line Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (item of getActiveOrderItems(order); track item.productId) {
+                              <tr>
+                                <td>{{ item.productName || '-' }}</td>
+                                <td>{{ item.sku || '-' }}</td>
+                                <td class="text-right">{{ item.quantity ?? '-' }}</td>
+                                <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+                                <td class="text-right">{{ formatCurrency(item.total) }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else if (loadingActiveOrders) {
+      <p class="loading-text">Loading active orders...</p>
+    } @else {
+      <p class="empty-text">No active orders this week.</p>
+    }
   </div>
 </div>

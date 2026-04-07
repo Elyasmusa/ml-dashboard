@@ -1,0 +1,97 @@
+<div class="matrix-container">
+  <div class="page-header">
+    <h1>Latest Franchise Product Orders</h1>
+    <button class="refresh-btn" (click)="loadData()" [disabled]="loading">
+      Refresh
+    </button>
+  </div>
+
+  @if (predictionsMissing) {
+    <div class="info-banner">
+      Product predictions not yet available — train the product model to populate the Next Order Products columns.
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Loading latest franchise product orders...</p>
+    </div>
+  } @else if (rows.length === 0) {
+    <div class="empty-state">
+      <p>No latest franchise product order data available.</p>
+    </div>
+  } @else {
+    <div class="summary-bar">
+      <span>{{ rows.length }} locations</span>
+      <span class="sep">|</span>
+      <span>{{ prodColumns.length }} products</span>
+      @if (!predictionsMissing) {
+        <span class="sep">|</span>
+        <span>{{ nextProdColumns.length }} predicted next-order products</span>
+      }
+    </div>
+
+    <div class="table-scroll">
+      <table class="matrix-table">
+        <thead>
+          <!-- Group header row -->
+          <tr class="group-header">
+            <th [attr.colspan]="fixedColumns.length" class="group-label">Order</th>
+            <th [attr.colspan]="locColumns.length" class="group-label group-loc">Locations</th>
+            <th [attr.colspan]="prodColumns.length" class="group-label group-prod">Last Order Products</th>
+            @if (!predictionsMissing && nextProdColumns.length > 0) {
+              <th [attr.colspan]="nextProdColumns.length" class="group-label group-next-prod">Predicted Next Order Products</th>
+            }
+          </tr>
+          <!-- Column header row -->
+          <tr>
+            @for (col of fixedColumns; track col) {
+              <th class="fixed-col">{{ fixedHeaders[col] }}</th>
+            }
+            @for (col of locColumns; track col) {
+              <th class="loc-col">{{ formatLocHeader(col) }}</th>
+            }
+            @for (col of prodColumns; track col) {
+              <th class="prod-col">{{ formatProdHeader(col) }}</th>
+            }
+            @if (!predictionsMissing) {
+              @for (col of nextProdColumns; track col) {
+                <th class="next-prod-col">{{ formatProdHeader(col) }}</th>
+              }
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.orderNumber) {
+            <tr>
+              @for (col of fixedColumns; track col) {
+                <td class="fixed-col">{{ getCellValue(row, col) }}</td>
+              }
+              @for (col of locColumns; track col) {
+                <td class="loc-cell" [class.active]="row[col] === 1">
+                  {{ getCellValue(row, col) }}
+                </td>
+              }
+              @for (col of prodColumns; track col) {
+                <td class="prod-cell" [class.has-qty]="row[col] && row[col] !== 0">
+                  {{ getCellValue(row, col) }}
+                </td>
+              }
+              @if (!predictionsMissing) {
+                @for (col of nextProdColumns; track col) {
+                  <td class="next-prod-cell" [class.has-qty]="row[col] && row[col] !== 0">
+                    {{ getCellValue(row, col) }}
+                  </td>
+                }
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

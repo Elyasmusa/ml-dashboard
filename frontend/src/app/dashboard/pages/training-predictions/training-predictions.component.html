@@ -1,0 +1,219 @@
+<div class="training-predictions-container">
+  <div class="page-header">
+    <h1>Model Training & Predictions</h1>
+  </div>
+
+  <!-- ── Training Controls ──────────────────────────────────────── -->
+
+  <div class="training-grid">
+    <div class="training-section">
+      <div class="training-header">
+        <h2>Order Prediction</h2>
+        <button class="train-btn" (click)="trainModel()" [disabled]="training">
+          {{ training ? 'Training...' : 'Train Model' }}
+        </button>
+      </div>
+
+      @if (trainingError) {
+        <div class="error-message">{{ trainingError }}</div>
+      }
+
+      @if (training) {
+        <p class="loading-text">Training order predictor model (80/20 split)...</p>
+      }
+
+      @if (trainingResult) {
+        <div class="variant-tabs">
+          @for (v of variantNames; track v) {
+            <button
+              class="variant-tab"
+              [class.active]="activeVariant === v"
+              (click)="selectVariant(v)">
+              {{ variantLabels[v] }}
+            </button>
+          }
+        </div>
+
+        @if (activeResult) {
+          <div class="training-results">
+            <div class="result-card accent">
+              <div class="result-label">Accuracy</div>
+              <div class="result-value">{{ activeResult.accuracy }}%</div>
+              <div class="result-note">within 7 days</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Val MAE</div>
+              <div class="result-value">{{ activeResult.val_mae }} days</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Val RMSE</div>
+              <div class="result-value">{{ activeResult.val_rmse }} days</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Val R²</div>
+              <div class="result-value">{{ activeResult.val_r2 }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Train MAE</div>
+              <div class="result-value">{{ activeResult.train_mae }} days</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Best Epoch</div>
+              <div class="result-value">{{ activeResult.epoch }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Samples</div>
+              <div class="result-value">{{ activeResult.samples_train }} / {{ activeResult.samples_val }}</div>
+              <div class="result-note">train / val</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Features</div>
+              <div class="result-value">{{ activeResult.num_features }}</div>
+              <div class="result-note">{{ activeResult.num_locations }} loc, {{ activeResult.num_products }} prod</div>
+            </div>
+          </div>
+        } @else if (activeResult === null) {
+          <p class="empty-text">No results for this variant.</p>
+        }
+      }
+    </div>
+
+    <div class="training-section product-training-section">
+      <div class="training-header">
+        <h2>Product Prediction</h2>
+        <button class="train-btn product-train-btn"
+                (click)="trainProductModel()"
+                [disabled]="productTraining">
+          {{ productTraining ? 'Training...' : 'Train Product Model' }}
+        </button>
+      </div>
+
+      @if (productTrainingError) {
+        <div class="error-message">{{ productTrainingError }}</div>
+      }
+
+      @if (productTraining) {
+        <p class="loading-text">Training product predictor model (all 4 variants)...</p>
+      }
+
+      @if (productTrainingResult) {
+        <div class="variant-tabs">
+          @for (v of variantNames; track v) {
+            <button class="variant-tab"
+                    [class.active]="activeVariant === v"
+                    (click)="selectVariant(v)">
+              {{ variantLabels[v] }}
+            </button>
+          }
+        </div>
+
+        @if (activeProductResult) {
+          <div class="training-results">
+            <div class="result-card">
+              <div class="result-label">Val MAE</div>
+              <div class="result-value">{{ activeProductResult.val_mae }}</div>
+              <div class="result-note">units (avg across products)</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Val RMSE</div>
+              <div class="result-value">{{ activeProductResult.val_rmse }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Val R²</div>
+              <div class="result-value">{{ activeProductResult.val_r2 }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Train MAE</div>
+              <div class="result-value">{{ activeProductResult.train_mae }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Best Epoch</div>
+              <div class="result-value">{{ activeProductResult.epoch }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Samples</div>
+              <div class="result-value">{{ activeProductResult.samples_train }} / {{ activeProductResult.samples_val }}</div>
+              <div class="result-note">train / val</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Target Products</div>
+              <div class="result-value">{{ activeProductResult.num_products }}</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Features</div>
+              <div class="result-value">{{ activeProductResult.num_features }}</div>
+            </div>
+          </div>
+        } @else {
+          <p class="empty-text">No results for this variant.</p>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- ── Combined Predictions Table ──────────────────────────────── -->
+
+  <div class="predictions-section">
+    <h2>Predicted Next Orders</h2>
+
+    <div class="variant-tabs">
+      @for (v of variantNames; track v) {
+        <button
+          class="variant-tab"
+          [class.active]="activeVariant === v"
+          (click)="selectVariant(v)">
+          {{ variantLabels[v] }}
+          @if (variantResults[v]?.accuracy != null) {
+            <span class="tab-accuracy">{{ variantResults[v]?.accuracy }}%</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (combinedLoading) {
+      <p class="loading-text">Loading predictions...</p>
+    } @else if (activePredictions.length === 0) {
+      <p class="empty-text">No predictions for {{ variantLabels[activeVariant] }} variant. Train both models to generate predictions.</p>
+    } @else {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Contact</th>
+              <th>Location</th>
+              <th>Last Order Date</th>
+              <th>Predicted Days</th>
+              <th>Predicted Next Order</th>
+              <th>Predicted Products</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of activePredictions; track row.orderNumber) {
+              <tr>
+                <td>{{ row.orderNumber || '-' }}</td>
+                <td>{{ row.contactName || '-' }}</td>
+                <td>{{ formatCity(row.city) }}</td>
+                <td>{{ formatDate(row.orderDate) }}</td>
+                <td>{{ row.predictedDaysToNext }} days</td>
+                <td>{{ formatDate(row.predictedNextOrderDate) }}</td>
+                <td>
+                  <div class="product-qty-list">
+                    @for (entry of getProductEntries(row); track entry.name) {
+                      <span class="product-qty-badge">
+                        {{ entry.name }}: {{ entry.qty }}
+                      </span>
+                    }
+                    @if (getProductEntries(row).length === 0) {
+                      <span class="empty-text">-</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

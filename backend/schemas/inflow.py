@@ -339,5 +339,5 @@ class InflowDashboardSummary(BaseModel):
     vendorsCount: int = 0
     salesOrdersCount: int = 0
     purchaseOrdersCount: int = 0
-    recentSalesOrders: list[InflowSalesOrder] = []
-    recentPurchaseOrders: list[InflowPurchaseOrder] = []
+    recentSalesOrders: list[dict[str, Any]] = []
+    recentPurchaseOrders: list[dict[str, Any]] = []

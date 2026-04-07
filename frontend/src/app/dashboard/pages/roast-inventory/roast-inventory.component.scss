@@ -1,0 +1,53 @@
+.roast-inventory-container {
+  padding: 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+}
+
+.table-card {
+  background: var(--card-bg, #1e1e2e);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border, #2a2a3e);
+  }
+
+  th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #888);
+  }
+
+  .sku {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+  }
+
+  .stock {
+    font-weight: 600;
+  }
+}
+
+.loading-text, .error-text {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--text-muted, #888);
+}
+
+.error-text {
+  color: var(--danger, #e74c3c);
+}

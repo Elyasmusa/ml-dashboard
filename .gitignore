@@ -35,6 +35,9 @@ backend/saved_models/*.pkl
 backend/saved_models/*.joblib
 !backend/saved_models/.gitkeep
 
+# Cached DataFrames (Parquet files)
+backend/cached_data/
+
 # Node / Angular
 node_modules/
 frontend/node_modules/
@@ -44,6 +47,9 @@ frontend/.angular/
 *.tgz
 .eslintcache
 .node_repl_history
+
+# Windows NUL device
+nul
 
 # TypeScript
 *.tsbuildinfo

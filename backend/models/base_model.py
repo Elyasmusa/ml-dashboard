@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-import tensorflow as tf
+
+import torch.nn as nn
 
 
 class BaseMLModel(ABC):
     """Abstract base for all ML model definitions."""
 
     @abstractmethod
-    def build(self) -> tf.keras.Model:
-        """Build and return the compiled Keras model."""
+    def build(self) -> nn.Module:
+        """Build and return the PyTorch model."""
         ...
 
     @abstractmethod

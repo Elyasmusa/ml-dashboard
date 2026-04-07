@@ -1,0 +1,273 @@
+.settings-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    h1 {
+      margin: 0;
+      font-weight: 400;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .save-btn {
+    padding: 8px 20px;
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+
+    &:hover:not(:disabled) { background: #1565c0; }
+    &:disabled { opacity: 0.6; cursor: default; }
+  }
+
+  .reset-btn {
+    padding: 8px 16px;
+    background: #fff;
+    border: 1px solid #bdbdbd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+
+    &:hover:not(:disabled) { background: #f5f5f5; }
+    &:disabled { opacity: 0.6; cursor: default; }
+  }
+
+  .save-success {
+    color: #2e7d32;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .save-error {
+    color: #c62828;
+    font-size: 13px;
+  }
+
+  .loading-text {
+    color: #888;
+    font-size: 14px;
+  }
+
+  // ── Tabs ──────────────────────────────────────────
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 28px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+
+    &:hover { color: #1976d2; }
+    &.active {
+      color: #1976d2;
+      border-bottom-color: #1976d2;
+    }
+  }
+
+  // ── Tab panels ────────────────────────────────────
+  .tab-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tab-description {
+    color: #666;
+    font-size: 13px;
+    margin: 0 0 20px;
+    line-height: 1.5;
+  }
+
+  .section-heading {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 28px 0 10px;
+
+    &:first-of-type { margin-top: 0; }
+  }
+
+  // ── Cards ─────────────────────────────────────────
+  .settings-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    padding: 20px 24px;
+    margin-bottom: 8px;
+
+    &.overflow-x {
+      overflow-x: auto;
+    }
+  }
+
+  // ── Field grid (label + input rows) ───────────────
+  .field-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    label {
+      min-width: 280px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .field-hint {
+      font-size: 12px;
+      color: #888;
+      flex: 1;
+
+      &.restart-note {
+        color: #e65100;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // ── Inputs ────────────────────────────────────────
+  .select-input {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background: #fff;
+    min-width: 150px;
+
+    &:focus {
+      outline: none;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+    }
+  }
+
+  .derived-value {
+    font-size: 14px;
+    color: #333;
+    min-width: 100px;
+    text-align: right;
+
+    .derived-note {
+      font-size: 12px;
+      color: #888;
+      margin-left: 4px;
+    }
+  }
+
+  .number-input {
+    width: 100px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    text-align: right;
+
+    &:focus {
+      outline: none;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+    }
+
+    &.sm {
+      width: 72px;
+    }
+  }
+
+  // ── Table (stock + timings) ────────────────────────
+  .settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+
+    th, td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    tbody tr:hover { background: #f9f9f9; }
+
+    .product-name {
+      color: #333;
+      white-space: nowrap;
+    }
+
+    input.number-input {
+      margin: 0;
+    }
+  }
+
+  .timings-table th, .timings-table td {
+    white-space: nowrap;
+  }
+
+  // ── Checkbox grid (exclusions) ─────────────────────
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+
+    input[type='checkbox'] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: #1976d2;
+    }
+  }
+}

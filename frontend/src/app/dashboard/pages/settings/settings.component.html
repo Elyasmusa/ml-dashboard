@@ -1,0 +1,504 @@
+<div class="settings-container">
+  <div class="page-header">
+    <h1>Settings</h1>
+    <div class="header-actions">
+      @if (saveSuccess) {
+        <span class="save-success">Saved successfully</span>
+      }
+      @if (saveError) {
+        <span class="save-error">{{ saveError }}</span>
+      }
+      <button class="reset-btn" (click)="resetToDefaults()" [disabled]="saving || loading">
+        Reset to Defaults
+      </button>
+      <button class="save-btn" (click)="save()" [disabled]="saving || loading">
+        {{ saving ? 'Saving…' : 'Save Settings' }}
+      </button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <p class="loading-text">Loading settings…</p>
+  } @else {
+
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'stock'"         (click)="selectTab('stock')">Stock Thresholds</button>
+    <button class="tab-btn" [class.active]="activeTab === 'manufacturing'" (click)="selectTab('manufacturing')">Manufacturing</button>
+    <button class="tab-btn" [class.active]="activeTab === 'training'"      (click)="selectTab('training')">Model Training</button>
+    <button class="tab-btn" [class.active]="activeTab === 'pipeline'"      (click)="selectTab('pipeline')">Data Pipeline</button>
+    <button class="tab-btn" [class.active]="activeTab === 'system'"        (click)="selectTab('system')">System</button>
+  </div>
+
+  <!-- ── Stock Thresholds ─────────────────────────────── -->
+  @if (activeTab === 'stock') {
+    <div class="tab-panel">
+      <p class="tab-description">
+        Minimum stock on hand for each product. The dashboard flags a product in red and
+        recommends manufacturing when remaining stock falls below this threshold.
+      </p>
+      <div class="settings-card">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Min Stock (units)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (name of stockProducts; track name) {
+              <tr>
+                <td class="product-name">{{ name }}</td>
+                <td>
+                  <input
+                    type="number"
+                    class="number-input"
+                    min="0"
+                    [ngModel]="getThreshold(name)"
+                    (ngModelChange)="setThreshold(name, $event)"
+                  />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ── Manufacturing ───────────────────────────────── -->
+  @if (activeTab === 'manufacturing') {
+    <div class="tab-panel">
+
+      <!-- Capacity & Timing -->
+      <h3 class="section-heading">Capacity</h3>
+      <p class="tab-description">Total available manufacturing time per period and buffer between product runs.</p>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Daily capacity (hours)</label>
+            <input type="number" class="number-input" min="0" step="0.5" [(ngModel)]="draft.manufacturing.capacity.dailyHours" />
+          </div>
+          <div class="field-row">
+            <label>Weekly capacity (hours)</label>
+            <span class="derived-value">{{ draft.manufacturing.capacity.dailyHours * 5 }} <span class="derived-note">(daily × 5)</span></span>
+          </div>
+          <div class="field-row">
+            <label>Monthly capacity (hours)</label>
+            <span class="derived-value">{{ draft.manufacturing.capacity.dailyHours * 5 * 4 }} <span class="derived-note">(weekly × 4)</span></span>
+          </div>
+          <div class="field-row">
+            <label>Buffer between items (minutes)</label>
+            <input type="number" class="number-input" min="0" [(ngModel)]="draft.manufacturing.capacity.bufferMinutes" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Coverage Thresholds -->
+      <h3 class="section-heading">Coverage Thresholds</h3>
+      <p class="tab-description">
+        Products are sorted into two manufacturing phases based on how much stock they have relative to their minimum threshold.
+        Items above the exclusion threshold are skipped entirely.
+      </p>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Phase 1 upper boundary (× threshold)</label>
+            <input type="number" class="number-input" min="1" step="0.1" [(ngModel)]="draft.manufacturing.coverage.phase1Threshold" />
+            <span class="field-hint">Default 1.5 = 150%</span>
+          </div>
+          <div class="field-row">
+            <label>Exclusion threshold (× threshold)</label>
+            <input type="number" class="number-input" min="1" step="0.1" [(ngModel)]="draft.manufacturing.coverage.exclusionThreshold" />
+            <span class="field-hint">Default 2.0 = 200%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Max Batch Multiplier -->
+      <h3 class="section-heading">Production Limits</h3>
+      <p class="tab-description">
+        Maximum quantity to manufacture per item per run, expressed as a multiple of the product's bag batch size.
+        For example, a multiplier of 2 with a batch size of 32 caps output at 64 units.
+      </p>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Max batch multiplier</label>
+            <input type="number" class="number-input" min="1" step="1" [(ngModel)]="draft.manufacturing.maxBatchMultiplier" />
+            <span class="field-hint">Max to manufacture = bag batch size × this value</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Caps -->
+      <h3 class="section-heading">Daily Quantity Caps</h3>
+      <p class="tab-description">
+        Maximum units that can be produced per day for products with physical prep constraints.
+        Leave blank for no cap.
+      </p>
+      <div class="settings-card">
+        <div class="field-grid">
+          @for (name of cappedProducts; track name) {
+            <div class="field-row">
+              <label>{{ name }}</label>
+              <input
+                type="number"
+                class="number-input"
+                min="0"
+                placeholder="No cap"
+                [ngModel]="getDailyCap(name)"
+                (ngModelChange)="setDailyCap(name, $event)"
+              />
+              <span class="field-hint">units/day</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Excluded from Manufacturing -->
+      <h3 class="section-heading">Excluded from Manufacturing</h3>
+      <p class="tab-description">Products that are never included in manufacturing recommendations.</p>
+      <div class="settings-card">
+        <div class="checkbox-grid">
+          @for (name of mfgProducts; track name) {
+            <label class="checkbox-row">
+              <input
+                type="checkbox"
+                [checked]="isExcluded(name)"
+                (change)="toggleExcluded(name, $any($event.target).checked)"
+              />
+              {{ name }}
+            </label>
+          }
+        </div>
+      </div>
+
+      <!-- Roast Requirements -->
+      <h3 class="section-heading">Roast Requirements</h3>
+      <p class="tab-description">
+        How many lbs of raw roast are consumed per finished unit for each coffee product.
+        Select "None" to remove a roast requirement for a product.
+      </p>
+      <div class="settings-card overflow-x">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Roast Required</th>
+              <th>lbs per unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (name of roastProducts; track name) {
+              <tr>
+                <td class="product-name">{{ name }}</td>
+                <td>
+                  <select
+                    class="select-input"
+                    [ngModel]="getRoastType(name)"
+                    (ngModelChange)="setRoastType(name, $event)"
+                  >
+                    <option value="">None</option>
+                    @for (rt of roastTypes; track rt) {
+                      <option [value]="rt">{{ rt }}</option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    class="number-input sm"
+                    min="0"
+                    step="0.05"
+                    [disabled]="!getRoastType(name)"
+                    [ngModel]="getRoastLbs(name)"
+                    (ngModelChange)="setRoastLbs(name, $event)"
+                  />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Per-Product Timings -->
+      <h3 class="section-heading">Per-Product Manufacturing Times</h3>
+      <p class="tab-description">
+        Batch sizes and minutes per batch for prep and bagging steps.
+        A prepPerBatch of 0 means no prep step (bagging only).
+      </p>
+      <div class="settings-card overflow-x">
+        <table class="settings-table timings-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Prep batch size</th>
+              <th>Prep min/batch</th>
+              <th>Bag batch size</th>
+              <th>Bag min/batch</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (name of mfgProducts; track name) {
+              <tr>
+                <td class="product-name">{{ name }}</td>
+                <td>
+                  <input type="number" class="number-input sm" min="1"
+                    [ngModel]="getTiming(name).prepBatchSize"
+                    (ngModelChange)="setTiming(name, 'prepBatchSize', $event)" />
+                </td>
+                <td>
+                  <input type="number" class="number-input sm" min="0"
+                    [ngModel]="getTiming(name).prepPerBatch"
+                    (ngModelChange)="setTiming(name, 'prepPerBatch', $event)" />
+                </td>
+                <td>
+                  <input type="number" class="number-input sm" min="1"
+                    [ngModel]="getTiming(name).bagBatchSize"
+                    (ngModelChange)="setTiming(name, 'bagBatchSize', $event)" />
+                </td>
+                <td>
+                  <input type="number" class="number-input sm" min="0"
+                    [ngModel]="getTiming(name).bagPerBatch"
+                    (ngModelChange)="setTiming(name, 'bagPerBatch', $event)" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  }
+
+  <!-- ── Model Training ──────────────────────────────── -->
+  @if (activeTab === 'training') {
+    <div class="tab-panel">
+      <p class="tab-description">
+        Hyperparameters for the order-date prediction model. Changes take effect the next time
+        you click Train Model. Note: changing these may require more or fewer epochs to converge.
+      </p>
+
+      <h3 class="section-heading">General</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Default epochs</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.training.defaultEpochs" />
+          </div>
+          <div class="field-row">
+            <label>Default batch size</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.training.defaultBatchSize" />
+          </div>
+          <div class="field-row">
+            <label>Train / val split</label>
+            <input type="number" class="number-input" min="0.5" max="0.95" step="0.05" [(ngModel)]="draft.training.trainValSplit" />
+            <span class="field-hint">0.8 = 80% train, 20% val</span>
+          </div>
+          <div class="field-row">
+            <label>Prediction tolerance (days)</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.training.predictionTolerance" />
+            <span class="field-hint">Used for the accuracy metric (within N days)</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Optimizer</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Learning rate</label>
+            <input type="number" class="number-input" min="0" step="0.0001" [(ngModel)]="draft.training.learningRate" />
+          </div>
+          <div class="field-row">
+            <label>Final retraining learning rate</label>
+            <input type="number" class="number-input" min="0" step="0.00001" [(ngModel)]="draft.training.finalLearningRate" />
+            <span class="field-hint">Used for the full-data retraining pass</span>
+          </div>
+          <div class="field-row">
+            <label>Weight decay (L2)</label>
+            <input type="number" class="number-input" min="0" step="0.00001" [(ngModel)]="draft.training.weightDecay" />
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Early Stopping & LR Schedule</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Early stopping patience (epochs)</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.training.earlyStoppingPatience" />
+          </div>
+          <div class="field-row">
+            <label>LR scheduler patience (epochs)</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.training.lrSchedulerPatience" />
+          </div>
+          <div class="field-row">
+            <label>LR scheduler factor</label>
+            <input type="number" class="number-input" min="0.01" max="0.99" step="0.05" [(ngModel)]="draft.training.lrSchedulerFactor" />
+            <span class="field-hint">Multiply LR by this on plateau (0.5 = halve)</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Recency Weighting</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Weight for oldest samples</label>
+            <input type="number" class="number-input" min="0.01" max="1" step="0.05" [(ngModel)]="draft.training.recencyWeightMin" />
+          </div>
+          <div class="field-row">
+            <label>Weight for newest samples</label>
+            <input type="number" class="number-input" min="0.01" max="2" step="0.05" [(ngModel)]="draft.training.recencyWeightMax" />
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Full-Data Retraining Guards</h3>
+      <p class="tab-description">
+        After validation, the model is retrained on 100% of the data only if these thresholds
+        are met. This prevents retraining a badly-fit model on all data.
+      </p>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Min R² for retraining</label>
+            <input type="number" class="number-input" min="-1" max="1" step="0.05" [(ngModel)]="draft.training.minR2ForRetraining" />
+          </div>
+          <div class="field-row">
+            <label>Min accuracy for retraining (%)</label>
+            <input type="number" class="number-input" min="0" max="100" [(ngModel)]="draft.training.minAccuracyForRetraining" />
+          </div>
+          <div class="field-row">
+            <label>Max val/train MAE ratio</label>
+            <input type="number" class="number-input" min="1" step="0.1" [(ngModel)]="draft.training.maxValTrainMaeRatio" />
+            <span class="field-hint">Overfitting guard — skip retraining if val MAE &gt; N × train MAE</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- ── Data Pipeline ───────────────────────────────── -->
+  @if (activeTab === 'pipeline') {
+    <div class="tab-panel">
+      <p class="tab-description">
+        Controls how raw sales orders are cleaned and transformed into the franchise order matrix
+        used for ML training. Changes take effect the next time data is refreshed (Update Data).
+      </p>
+
+      <h3 class="section-heading">Order Filtering</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Min orders per location (min_orders variant)</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.dataPipeline.minOrdersThreshold" />
+            <span class="field-hint">Locations with fewer orders are excluded from the min_orders data variant</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Order Merging</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Merge window (days)</label>
+            <input type="number" class="number-input" min="0" [(ngModel)]="draft.dataPipeline.mergeWindowDays" />
+            <span class="field-hint">Orders within this many days of each other are merged into one</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Small Order Absorption</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Small order qty threshold (units)</label>
+            <input type="number" class="number-input" min="0" [(ngModel)]="draft.dataPipeline.smallOrderQtyThreshold" />
+            <span class="field-hint">Pass 1: orders at or below this qty are absorbed into neighbours</span>
+          </div>
+          <div class="field-row">
+            <label>Cascade threshold (fraction of location average)</label>
+            <input type="number" class="number-input" min="0" max="1" step="0.05" [(ngModel)]="draft.dataPipeline.smallOrderCascadeThreshold" />
+            <span class="field-hint">Pass 2: orders below this fraction of the location average are repeatedly absorbed (0.25 = 25%)</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Dormancy</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Dormant threshold (days)</label>
+            <input type="number" class="number-input" min="30" [(ngModel)]="draft.dataPipeline.dormantThresholdDays" />
+            <span class="field-hint">Gaps larger than this mark a location as dormant; the shop is excluded if its most recent order is this far behind the dataset</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- ── System ──────────────────────────────────────── -->
+  @if (activeTab === 'system') {
+    <div class="tab-panel">
+      <p class="tab-description">
+        Polling and API configuration. Backend polling changes require a server restart to take effect.
+        Frontend poll interval takes effect immediately on next page load.
+      </p>
+
+      <h3 class="section-heading">Backend Polling</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Poll interval (seconds)</label>
+            <input type="number" class="number-input" min="10" [(ngModel)]="draft.system.backendPollInterval" />
+            <span class="field-hint restart-note">Requires server restart</span>
+          </div>
+          <div class="field-row">
+            <label>Full re-fetch every N cycles</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.system.fullRefreshEveryCycles" />
+            <span class="field-hint restart-note">Requires server restart — at default 60 s interval, 60 cycles ≈ 1 hour</span>
+          </div>
+          <div class="field-row">
+            <label>Daily product refresh hour (0–23, ET)</label>
+            <input type="number" class="number-input" min="0" max="23" [(ngModel)]="draft.system.productRefreshHour" />
+            <span class="field-hint restart-note">Requires server restart</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">API Page Size</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Records per API page</label>
+            <input type="number" class="number-input" min="1" max="500" [(ngModel)]="draft.system.apiPageSize" />
+            <span class="field-hint restart-note">Requires server restart</span>
+          </div>
+          <div class="field-row">
+            <label>Max pages per fetch</label>
+            <input type="number" class="number-input" min="1" [(ngModel)]="draft.system.maxPagesPerFetch" />
+            <span class="field-hint restart-note">Requires server restart</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-heading">Frontend</h3>
+      <div class="settings-card">
+        <div class="field-grid">
+          <div class="field-row">
+            <label>Dashboard poll interval (ms)</label>
+            <input type="number" class="number-input" min="10000" step="5000" [(ngModel)]="draft.system.frontendPollIntervalMs" />
+            <span class="field-hint">How often the dashboard auto-refreshes stock and active orders</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  } <!-- end @if (!loading) -->
+</div>

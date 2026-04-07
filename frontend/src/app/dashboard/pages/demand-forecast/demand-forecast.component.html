@@ -1,0 +1,76 @@
+<div class="demand-forecast-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Predicted Demand Ranking</h1>
+      <p class="subtitle">Total quantities predicted across all upcoming franchise orders</p>
+    </div>
+    @if (!loading && demandRows.length > 0) {
+      <div class="summary-pill">
+        {{ demandRows.length }} products &nbsp;·&nbsp; {{ totalPredictedOrders }} units total
+      </div>
+    }
+  </div>
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p>Loading demand forecast...</p>
+    </div>
+  } @else if (demandRows.length === 0) {
+    <div class="empty-state">
+      <p>No predicted demand data available. Train a model first.</p>
+    </div>
+  } @else {
+    <div class="table-card">
+      <table class="demand-table">
+        <thead>
+          <tr>
+            <th class="col-rank">Rank</th>
+            <th class="col-name">Product</th>
+            <th class="col-category">Category</th>
+            <th class="col-number">Predicted Demand</th>
+            <th class="col-number">Current Stock</th>
+            <th class="col-number">Net (Stock − Demand)</th>
+            <th class="col-number">Stock Coverage</th>
+            <th class="col-number">(|Net|+T) / Batch</th>
+            <th class="col-number">((|Net|+T)/Batch) / (100%+Cov × T/B)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of demandRows; track row.name) {
+            <tr [class.top-three]="row.rank <= 3">
+              <td class="col-rank">
+                <span class="rank-badge" [class]="'rank-' + row.rank">
+                  {{ getRankLabel(row.rank) }}
+                </span>
+              </td>
+              <td class="col-name">{{ row.name }}</td>
+              <td class="col-category">
+                <span class="category-pill category-{{ row.category.toLowerCase() }}">
+                  {{ row.category }}
+                </span>
+              </td>
+              <td class="col-number demand-qty">{{ row.totalDemand }}</td>
+              <td class="col-number">{{ row.currentStock }}</td>
+              <td class="col-number">
+                <span class="net-value" [class]="getNetClass(row.net)">
+                  {{ row.net >= 0 ? '+' : '' }}{{ row.net }}
+                </span>
+              </td>
+              <td class="col-number">
+                <span class="coverage-value" [class]="getCoverageClass(row.stockCoverage)">
+                  {{ formatCoverage(row.stockCoverage) }}
+                </span>
+              </td>
+              <td class="col-number net-batches">{{ formatNetBatches(row.netBatches) }}</td>
+              <td class="col-number batch-score">{{ formatBatchScore(row.batchScore) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

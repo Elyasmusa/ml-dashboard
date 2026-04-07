@@ -1,0 +1,177 @@
+.franchise-location-orders-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-weight: 400;
+    }
+  }
+
+  .error-message {
+    background: #fdecea;
+    color: #b71c1c;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+
+  .loading-container,
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: #888;
+    font-size: 16px;
+  }
+
+  .layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .city-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+
+    .sidebar-title {
+      margin: 0;
+      padding: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+
+    .city-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .city-item {
+      padding: 12px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f5f5f5;
+      color: #333;
+      transition: background 0.15s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background: #f5f5f5;
+      }
+
+      &.active {
+        background: #e3f2fd;
+        color: #1565c0;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .orders-panel {
+    flex: 1;
+    min-width: 0;
+
+    .panel-header {
+      margin-bottom: 16px;
+
+      h2 {
+        margin: 0;
+        font-weight: 400;
+        font-size: 20px;
+        color: #333;
+      }
+    }
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    overflow: auto;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #fafafa;
+      font-weight: 600;
+      color: #555;
+      font-size: 12px;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+    }
+
+    .col-order {
+      width: 110px;
+    }
+
+    .col-contact {
+      min-width: 140px;
+    }
+
+    .col-date {
+      width: 110px;
+    }
+
+    .col-total {
+      width: 100px;
+    }
+
+    .col-product {
+      min-width: 160px;
+      white-space: normal;
+    }
+
+    .col-sku {
+      width: 110px;
+    }
+
+    .col-qty {
+      width: 70px;
+    }
+
+    .col-price {
+      width: 100px;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    tbody tr:hover {
+      background: #f5f5f5;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  }
+}
